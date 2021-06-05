@@ -16,9 +16,9 @@ class OrderViewSet(mixins.ListModelMixin,mixins.RetrieveModelMixin,mixins.Create
     permission_classes = [permissions.IsAuthenticated]
 
     def get_serializer_class(self):
-        if self.action == "retrieve":
-            return OrderDetailSerializer
-        return OrderSerializer
+        if self.action == "create":
+            return OrderSerializer
+        return OrderDetailSerializer
 
     def get_queryset(self):
         return Order.objects.filter(memberID=self.request.user) #有修改過

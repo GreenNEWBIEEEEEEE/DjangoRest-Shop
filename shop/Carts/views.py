@@ -7,6 +7,7 @@ from .serializers import CartDetailSerializer
 from rest_framework import permissions
 from rest_framework import authentication
 from .models import Cart
+from .models import Merchandise
 #from custom.permissions import IsOwnerOrReadOnly
 from rest_framework.response import Response
 # Create your views here.
@@ -29,7 +30,20 @@ class CartViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,mixins.Update
 
     # 如果serializer沒有hidden field的話，override此方法，這樣也可以不用傳送memberID進行添加
     def perform_create(self, serializer):
-        serializer.save(member=self.request.user)
+        try:
+            exitstedMerchandise = Cart.objects.get(member=self.request.user, merchandise=serializer.validated_data['merchandise'])
+        except Cart.DoesNotExist:
+            exitstedMerchandise = None
+
+        # 以下是避免用戶購買重複東西，造成duplicate
+        # 如果資料庫已有相同的key，就直接update資料庫
+        if (exitstedMerchandise != None):
+            #existedMerchandise適從資料庫拿出來的object，因此必須用.{屬性}access，
+            #serializer的data是dict，所以要用[]，除此之外，serializer如果要access Data，只能使用validated_data
+            exitstedMerchandise.Quantity += serializer.validated_data['Quantity']
+            exitstedMerchandise.save()
+        else:
+            serializer.save(member=self.request.user)
 
 
 '''

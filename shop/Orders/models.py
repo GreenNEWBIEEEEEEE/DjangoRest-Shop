@@ -14,6 +14,6 @@ class Order(models.Model):
     total_price = models.IntegerField(db_column='Total_Price')  # Field name made lowercase.
     date = models.DateTimeField(db_column='Date', default=datetime.now)  # Field name made lowercase.
     memberID = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Member")
-
+    #discount_price = models.IntegerField(db_column='Discount_Price')  # Field name made lowercase.
     class Meta:
         db_table = 'Orders'
