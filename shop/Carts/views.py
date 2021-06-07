@@ -1,3 +1,4 @@
+from django.db.models import Sum
 from django.shortcuts import render
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework.authentication import SessionAuthentication
@@ -41,19 +42,23 @@ class CartViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,mixins.Update
             #existedMerchandise適從資料庫拿出來的object，因此必須用.{屬性}access，
             #serializer的data是dict，所以要用[]，除此之外，serializer如果要access Data，只能使用validated_data
             exitstedMerchandise.Quantity += serializer.validated_data['Quantity']
+            exitstedMerchandise.total_price = exitstedMerchandise.merchandise.price * exitstedMerchandise.Quantity
             exitstedMerchandise.save()
         else:
-            serializer.save(member=self.request.user)
-
-
-'''
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        merchandises = self.get_queryset()
-        total = 0
-        for sum in merchandises:
-            total += sum
-        instance.save()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-'''
+            # serializer.validated_data是OrderedDict
+            # 這邊serializer.validated_data['merchandise']拿出來的是一個object，要注意，雖然前端傳送id
+            # 但是serializer的data已經處理過了，已經可以直接拿object
+            print(serializer.validated_data)
+            print(serializer.validated_data['merchandise'])
+            print(serializer.validated_data['merchandise'].id)
+            print()
+            t = Merchandise.objects.get(pk=serializer.validated_data['merchandise'].id)
+            serializer.save(member=self.request.user, total_price=t.price * serializer.validated_data['Quantity'])
+    def list(self, request, *args, **kwargs):
+        resp = super().list(request, args, kwargs)
+        #{'total_price__sum': 13800}
+        print(type(resp.data))
+        # resp.data是個list，裡面有很多dict，[ OrderedDict, OrderedDict]
+        #print(self.get_queryset().aggregate(Sum('total_price')))
+        resp.data.append({'sum': self.get_queryset().aggregate(Sum('total_price'))['total_price__sum']})
+        return resp

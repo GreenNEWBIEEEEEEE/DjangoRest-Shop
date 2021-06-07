@@ -23,6 +23,7 @@ from django.urls import include
 from rest_framework.authtoken import views
 from rest_framework_jwt.views import obtain_jwt_token
 from Carts.views import CartViewSet
+from Coupons.views import CouponViewSet
 
 router = DefaultRouter()
 
@@ -30,6 +31,7 @@ router.register(r'merchandise', MerchandisesViewSet, basename="merchandises")
 router.register(r'member', MemberViewSet, basename="member")
 router.register(r'order', OrderViewSet, basename="order")
 router.register(r'cart', CartViewSet, basename="cart")
+router.register(r'coupon', CouponViewSet, basename="coupon")
 #router.register(r'merchandise', MerchandisesViewSet, basename="merchandises")
 
 urlpatterns = [
